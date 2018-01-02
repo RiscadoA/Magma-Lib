@@ -451,6 +451,109 @@ void Magma::String::Set(size_t index, char32_t character)
 	}
 }
 
+void Magma::String::Erase(size_t index)
+{
+	if (index >= m_length)
+		throw std::out_of_range("Failed to erase character in string, index out of range");
+
+	size_t realIndex = 0;
+	for (size_t i = 0; i < index; ++i)
+		realIndex += UTF8::GetCharSize(&m_data[realIndex]);
+	size_t oldChrSize = UTF8::GetCharSize(&m_data[realIndex]);
+
+	size_t oldSize = m_size;
+	m_size -= oldChrSize;
+
+	// Create new buffer with new data
+	char* newData = (char*)malloc(m_size + 1);
+	memcpy(newData, m_data, realIndex);
+	memcpy(newData + realIndex, m_data + realIndex + oldChrSize, oldSize - realIndex - oldChrSize);
+	newData[m_size] = '\0';
+
+	// Switch old buffer with new buffer
+	free(m_data);
+	m_data = newData;
+}
+
+void Magma::String::Erase(size_t index, size_t length)
+{
+	if (index + length > m_length)
+		throw std::out_of_range("Failed to erase substring in string, substring index + substring length > string length");
+	m_length -= length;
+
+	size_t realIndex = 0;
+	for (size_t i = 0; i < index; ++i)
+		realIndex += UTF8::GetCharSize(&m_data[realIndex]);
+
+	size_t size = 0;
+	for (size_t l = 0; l < length; ++l)
+		size += UTF8::GetCharSize(&m_data[realIndex + size]);
+
+	size_t oldSize = m_size;
+	m_size -= size;
+
+	// Create new buffer with new data
+	char* newData = (char*)malloc(m_size + 1);
+	memcpy(newData, m_data, realIndex);
+	memcpy(newData + realIndex, m_data + realIndex + size, oldSize - realIndex - size);
+	newData[m_size] = '\0';
+
+	// Switch old buffer with new buffer
+	free(m_data);
+	m_data = newData;
+}
+
+void Magma::String::Insert(size_t index, char32_t character)
+{
+	if (index > m_length)
+		throw std::out_of_range("Failed to insert character in string, index out of range");
+	++m_length;
+
+	size_t realIndex = 0;
+	for (size_t i = 0; i < index; ++i)
+		realIndex += UTF8::GetCharSize(&m_data[realIndex]);
+	size_t chrSize = UTF8::GetCharSize(character);
+
+	size_t oldSize = m_size;
+	m_size += chrSize;
+
+	// Create new buffer with new data
+	char* newData = (char*)malloc(m_size + 1);
+	memcpy(newData, m_data, realIndex);
+	memcpy(newData + realIndex + chrSize, m_data + realIndex, oldSize - realIndex);
+	UTF8::FromUnicode(character, &newData[realIndex]);
+	newData[m_size] = '\0';
+
+	// Switch old buffer with new buffer
+	free(m_data);
+	m_data = newData;
+}
+
+void Magma::String::Insert(size_t index, const String & substring)
+{
+	if (index > m_length)
+		throw std::out_of_range("Failed to insert substring in string, index out of range");
+	m_length += substring.Length();
+
+	size_t realIndex = 0;
+	for (size_t i = 0; i < index; ++i)
+		realIndex += UTF8::GetCharSize(&m_data[realIndex]);
+
+	size_t oldSize = m_size;
+	m_size += substring.Size();
+
+	// Create new buffer with new data
+	char* newData = (char*)malloc(m_size + 1);
+	memcpy(newData, m_data, realIndex);
+	memcpy(newData + realIndex + substring.Size(), m_data + realIndex, oldSize - realIndex);
+	memcpy(&newData[realIndex], substring.CString(), substring.Size());
+	newData[m_size] = '\0';
+
+	// Switch old buffer with new buffer
+	free(m_data);
+	m_data = newData;
+}
+
 Magma::String::~String() noexcept
 {
 	m_size = 0;

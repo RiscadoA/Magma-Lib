@@ -10,11 +10,15 @@ int main(int argc, char** argv)
 	{
 		String str = u8"Test!";
 
-		String str2 = str + u8" This was appended! \n";
-		str2.Pop();
+		String str2 = str + u8" This was appended! ";
 		str2 += u8"This was going to be a new line, but the new line was popped.";
 
-		auto split = str2.Split(u8"This");
+		str2.Clear();
+		str2.Insert(0, u8"A B");
+
+		std::cout << str2.CString() << std::endl;
+
+		auto split = str2.Split(U' ');
 		for (auto& substring : split)
 			std::cout << "'" << substring.CString() << "' ";
 	}

@@ -161,7 +161,7 @@ namespace Magma
 		std::vector<String> Split(const String& delimeter) const;
 
 		/// <summary>
-		///		Gets a character in the string
+		///		Gets a character in this string
 		/// </summary>
 		/// <param name="index">Character index</param>
 		/// <exception cref="std::out_of_bounds">Thrown if index is out of range</exception>
@@ -169,12 +169,43 @@ namespace Magma
 		char32_t At(size_t index) const;
 
 		/// <summary>
-		///		Sets a character in the string
+		///		Sets a character in this string
 		/// </summary>
 		/// <param name="index">Character index</param>
 		/// <param name="character">Character unicode point</param>
 		/// <exception cref="std::out_of_bounds">Thrown if index is out of range</exception>
 		void Set(size_t index, char32_t character);
+
+		/// <summary>
+		///		Erases a character from this string
+		/// </summary>
+		/// <param name="index">Character index</param>
+		/// <exception cref="std::out_of_bounds">Thrown if index is out of range</exception>
+		void Erase(size_t index);
+
+		/// <summary>
+		///		Erases a substring from this string
+		/// </summary>
+		/// <param name="index">Substring index</param>
+		/// <param name="length">Substring length</param>
+		/// <exception cref="std::out_of_bounds">Thrown if substring index + substring length is bigger than string length</exception>
+		void Erase(size_t index, size_t length);
+
+		/// <summary>
+		///		Inserts a character into this string
+		/// </summary>
+		/// <param name="index">Index where character will be inserted</param>
+		/// <param name="character">Character unicode point</param>
+		/// <exception cref="std::out_of_bounds">Thrown if index is out of range</exception>
+		void Insert(size_t index, char32_t character);
+
+		/// <summary>
+		///		Inserts a substring into this string
+		/// </summary>
+		/// <param name="index">Substring index</param>
+		/// <param name="substring">Substring</param>
+		/// <exception cref="std::out_of_bounds">Thrown if index is bigger than string length</exception>
+		void Insert(size_t index, const String& substring);
 
 		/// <summary>
 		///		Gets this string length in characters

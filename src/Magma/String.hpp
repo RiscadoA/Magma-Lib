@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdexcept>
 #include <vector>
 
@@ -225,6 +227,34 @@ namespace Magma
 		/// <returns>True if empty, otherwise false</returns>
 		inline bool Empty() const noexcept { return m_length == 0; }
 
+		/// <summary>
+		///		Checks if this string starts with a substring
+		/// </summary>
+		/// <param name="substring">Substring to check</param>
+		/// <returns>True if starts, otherwise false</returns>
+		bool StartsWith(const String& substring) const;
+
+		/// <summary>
+		///		Checks if this string ends with a substring
+		/// </summary>
+		/// <param name="substring">Substring to check</param>
+		/// <returns>True if ends, otherwise false</returns>
+		bool EndsWith(const String& substring) const;
+
+		/// <summary>
+		///		Compares this string with another
+		/// </summary>
+		/// <param name="rhs">String to compare</param>
+		/// <returns>True if they are equal, otherwise false</returns>
+		bool operator==(const String& rhs) const;
+
+		/// <summary>
+		///		Compares this string with another
+		/// </summary>
+		/// <param name="rhs">String to compare</param>
+		/// <returns>False if they are equal, otherwise true</returns>
+		inline bool operator!=(const String& rhs) const { return !(*this == rhs); }
+
 	private:
 		size_t m_length;
 		size_t m_size;
@@ -238,6 +268,13 @@ namespace Magma
 		public:
 			using std::runtime_error::runtime_error;
 		};
+
+		/// <summary>
+		///		Checks if unicode point is valid
+		/// </summary>
+		/// <param name="character">Unicode point</param>
+		/// <returns>True if valid, otherwise false</returns>
+		bool IsValid(char32_t character);
 
 		/// <summary>
 		///		Checks if a UTF-8 C string is valid

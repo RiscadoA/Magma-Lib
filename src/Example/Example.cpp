@@ -1,31 +1,36 @@
 #include <iostream>
+#include <array>
 
 #include <Magma\String.hpp>
+#include <Magma\Streams\IOStream.hpp>
 
 using namespace Magma;
 
 int main(int argc, char** argv)
 {
+	//freopen("test.txt", "r", stdin);
+
 	try
 	{
-		String str = u8"Test!";
+		std::array<char32_t, 256> stdOutBuffer;
+		std::array<char32_t, 256> stdInBuffer;
 
-		String str2 = str + u8" This was appended! ";
-		str2 += u8"This was going to be a new line, but the new line was popped.";
+		STDOutStreamBuffer stdOut(stdOutBuffer.data(), stdOutBuffer.size());
+		STDInStreamBuffer stdIn(stdInBuffer.data(), stdInBuffer.size());
 
-		str2.Clear();
-		str2.Insert(0, u8"A B");
+		auto chr = stdIn.GetChar();
 
-		std::cout << str2.CString() << std::endl;
+		std::cout << std::endl << std::hex << chr << std::endl;
 
-		auto split = str2.Split(U' ');
-		for (auto& substring : split)
-			std::cout << "'" << substring.CString() << "' ";
+		stdOut.PutChar(chr);
+
+		stdOut.Sync();
 	}
 	catch (std::exception& e)
 	{
 		std::cout << e.what() << std::endl;
 	}
 
-	std::cin.get();
+	for (size_t i = 0; i < 2; ++i)
+		std::cin.get();
 }

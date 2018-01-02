@@ -2,6 +2,11 @@
 
 #include <cstring>
 
+bool Magma::UTF8::IsValid(char32_t character)
+{
+	return character <= 0X10FFFF;
+}
+
 bool Magma::UTF8::IsValid(const char * utf8String)
 {
 	const char* ptr = utf8String;
@@ -552,6 +557,30 @@ void Magma::String::Insert(size_t index, const String & substring)
 	// Switch old buffer with new buffer
 	free(m_data);
 	m_data = newData;
+}
+
+bool Magma::String::StartsWith(const String & substring) const
+{
+	if (substring.Size() > this->Size())
+		return false;
+	return substring == this->Substring(0, substring.Length());
+}
+
+bool Magma::String::EndsWith(const String & substring) const
+{
+	if (substring.Size() > this->Size())
+		return false;
+	return substring == this->Substring(this->Length() - substring.Length(), substring.Length());
+}
+
+bool Magma::String::operator==(const String & rhs) const
+{
+	if (this->Size() != rhs.Size())
+		return false;
+	for (size_t i = 0; i < m_size; ++i)
+		if (m_data[i] != rhs.m_data[i])
+			return false;
+	return true;
 }
 
 Magma::String::~String() noexcept

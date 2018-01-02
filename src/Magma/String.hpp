@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <vector>
 
 namespace Magma
 {
@@ -111,7 +112,7 @@ namespace Magma
 		/// </summary>
 		/// <param name="rhs">String to append</param>
 		/// <returns>Appended strings</returns>
-		String operator+(const String& rhs);
+		String operator+(const String& rhs) const;
 
 		/// <summary>
 		///		Appends a string to this string
@@ -126,7 +127,7 @@ namespace Magma
 		/// <param name="rhs">UTF-8 C string to append</param>
 		/// <exception cref="InvalidStringError">Thrown if C string contains invalid UTF-8</exception>
 		/// <returns>Appended strings</returns>
-		String operator+(const char* rhs);
+		String operator+(const char* rhs) const;
 
 		/// <summary>
 		///		Appends a UTF-8 C string to this string
@@ -135,6 +136,63 @@ namespace Magma
 		/// <exception cref="InvalidStringError">Thrown if C string contains invalid UTF-8</exception>
 		/// <returns>This</returns>
 		String& operator+=(const char* rhs);
+
+		/// <summary>
+		///		Gets a substring of this string
+		/// </summary>
+		/// <param name="index">Substring starting index</param>
+		/// <param name="length">Substring length</param>
+		/// <exception cref="std::out_of_bounds">Thrown if index + length is bigger than this string's length</exception>
+		/// <returns>The substring</returns>
+		String Substring(size_t index, size_t length) const;
+
+		/// <summary>
+		///		Splits this string into many
+		/// </summary>
+		/// <param name="delimeter">Delimiter between substrings</param>
+		/// <returns>Vector of substrings</returns>
+		std::vector<String> Split(char32_t delimeter) const;
+
+		/// <summary>
+		///		Splits this string into many
+		/// </summary>
+		/// <param name="delimeter">Delimiter between substrings</param>
+		/// <returns>Vector of substrings</returns>
+		std::vector<String> Split(const String& delimeter) const;
+
+		/// <summary>
+		///		Gets a character in the string
+		/// </summary>
+		/// <param name="index">Character index</param>
+		/// <exception cref="std::out_of_bounds">Thrown if index is out of range</exception>
+		/// <returns>Character unicode point</returns>
+		char32_t At(size_t index) const;
+
+		/// <summary>
+		///		Sets a character in the string
+		/// </summary>
+		/// <param name="index">Character index</param>
+		/// <param name="character">Character unicode point</param>
+		/// <exception cref="std::out_of_bounds">Thrown if index is out of range</exception>
+		void Set(size_t index, char32_t character);
+
+		/// <summary>
+		///		Gets this string length in characters
+		/// </summary>
+		/// <returns>String length in characters</returns>
+		inline size_t Length() const noexcept { return m_length; }
+
+		/// <summary>
+		///		Gets this string size in bytes
+		/// </summary>
+		/// <returns></returns>
+		inline size_t Size() const noexcept { return m_size; }
+
+		/// <summary>
+		///		Checks if this string is empty
+		/// </summary>
+		/// <returns>True if empty, otherwise false</returns>
+		inline bool Empty() const noexcept { return m_length == 0; }
 
 	private:
 		size_t m_length;

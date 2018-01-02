@@ -14,13 +14,11 @@ int main(int argc, char** argv)
 		str2.Pop();
 		str2 += u8"This was going to be a new line, but the new line was popped.";
 
-		std::cout << str2.CString();
+		auto split = str2.Split(u8"This");
+		for (auto& substring : split)
+			std::cout << "'" << substring.CString() << "' ";
 	}
-	catch (InvalidStringError& e)
-	{
-		std::cout << e.what() << std::endl;
-	}
-	catch(UTF8::InvalidCharacterError& e)
+	catch (std::exception& e)
 	{
 		std::cout << e.what() << std::endl;
 	}

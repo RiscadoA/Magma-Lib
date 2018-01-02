@@ -238,6 +238,7 @@ void Magma::String::AppendChar(char32_t character)
 {
 	auto size = UTF8::GetCharSize(character);
 	m_size = m_size + size;
+	++m_length;
 	m_data = (char*)realloc(m_data, m_size + 1);
 	UTF8::FromUnicode(character, m_data + (m_size - size));
 	m_data[m_size] = '\0';
@@ -247,6 +248,7 @@ size_t Magma::String::AppendChar(const char * character)
 {
 	auto size = UTF8::GetCharSize(character);
 	m_size = m_size + size;
+	++m_length;
 	m_data = (char*)realloc(m_data, m_size + 1);
 	memcpy(m_data + (m_size - size), character, size);
 	m_data[m_size] = '\0';
@@ -264,11 +266,20 @@ void Magma::String::AppendString(const char * utf8CString)
 	m_data = (char*)realloc(m_data, m_size + 1);
 	memcpy(m_data + (m_size - size), utf8CString, size);
 	m_data[m_size] = '\0';
+
+	m_length = 0;
+	for (size_t i = 0; i < m_size;)
+	{
+		size_t size = UTF8::GetCharSize(&m_data[i]);
+		i += size;
+		++m_length;
+	}
 }
 
 void Magma::String::AppendString(const String & string)
 {
 	m_size = m_size + string.m_size;
+	m_length = m_length + string.m_length;
 	m_data = (char*)realloc(m_data, m_size + 1);
 	memcpy(m_data + (m_size - string.m_size), string.CString(), string.m_size);
 	m_data[m_size] = '\0';
@@ -297,7 +308,7 @@ void Magma::String::Clear()
 	m_data[0] = '\0';
 }
 
-Magma::String Magma::String::operator+(const String & rhs)
+Magma::String Magma::String::operator+(const String & rhs) const
 {
 	String str = *this;
 	str.AppendString(rhs);
@@ -310,7 +321,7 @@ Magma::String & Magma::String::operator+=(const String & rhs)
 	return *this;
 }
 
-Magma::String Magma::String::operator+(const char * rhs)
+Magma::String Magma::String::operator+(const char * rhs) const
 {
 	String str = *this;
 	str.AppendString(rhs);
@@ -321,6 +332,123 @@ Magma::String & Magma::String::operator+=(const char * rhs)
 {
 	this->AppendString(rhs);
 	return *this;
+}
+
+Magma::String Magma::String::Substring(size_t index, size_t length) const
+{
+	if (index + length > m_length)
+		throw std::out_of_range("Failed to get substring from string, substring index + substring length > string length");
+	String substring;
+	size_t realIndex = 0;
+	for (size_t i = 0; i < index; ++i)
+		realIndex += UTF8::GetCharSize(&m_data[realIndex]);
+	for (size_t i = 0; i < length; ++i)
+	{
+		substring.AppendChar(&m_data[realIndex]);
+		realIndex += UTF8::GetCharSize(&m_data[realIndex]);
+	}
+	return std::move(substring);
+}
+
+std::vector<Magma::String> Magma::String::Split(char32_t delimeter) const
+{
+	std::vector<String> substrings;
+	size_t startIndex = 0, length = 0;
+	for (size_t i = 0; i < m_length; ++i)
+	{
+		if (this->At(i) == delimeter)
+		{
+			substrings.push_back(std::move(this->Substring(startIndex, length)));
+			startIndex = i + 1;
+			length = 0;
+		}
+		else ++length;
+	}
+	if (length > 0)
+		substrings.push_back(std::move(this->Substring(startIndex, length)));
+	return std::move(substrings);
+}
+
+std::vector<Magma::String> Magma::String::Split(const String & delimeter) const
+{
+	if (delimeter.Empty())
+		return std::move(std::vector<Magma::String> { *this });
+
+	std::vector<String> substrings;
+	size_t startIndex = 0, length = 0;
+	size_t charsFound = 0;
+	for (size_t i = 0; i < m_length; ++i)
+	{
+		if (this->At(i) == delimeter.At(charsFound))
+		{
+			++charsFound;
+			if (charsFound == delimeter.Length())
+			{
+				charsFound = 0;
+				substrings.push_back(std::move(this->Substring(startIndex, length)));
+				startIndex = i + 1;
+				length = 0;
+			}
+		}
+		else
+		{
+			++length;
+			if (charsFound > 0)
+			{
+				length += charsFound;
+				charsFound = 0;
+			}
+		}
+	}
+	if (length > 0)
+		substrings.push_back(std::move(this->Substring(startIndex, length)));
+	return std::move(substrings);
+}
+
+char32_t Magma::String::At(size_t index) const
+{
+	if (index >= m_length)
+		throw std::out_of_range("Failed to get character from string, index out of range");
+
+	size_t realIndex = 0;
+	for (size_t i = 0; i < index; ++i)
+		realIndex += UTF8::GetCharSize(&m_data[realIndex]);
+	return UTF8::ToUnicode(&m_data[realIndex]);
+}
+
+void Magma::String::Set(size_t index, char32_t character)
+{
+	if (index >= m_length)
+		throw std::out_of_range("Failed to set character in string, index out of range");
+
+	size_t realIndex = 0;
+	for (size_t i = 0; i < index; ++i)
+		realIndex += UTF8::GetCharSize(&m_data[realIndex]);
+	size_t oldChrSize = UTF8::GetCharSize(&m_data[realIndex]);
+	size_t newChrSize = UTF8::GetCharSize(character);
+
+	if (oldChrSize == newChrSize)
+		UTF8::FromUnicode(character, &m_data[realIndex]);
+	else
+	{
+		size_t oldSize = m_size;
+
+		if (newChrSize < oldChrSize)
+			m_size = m_size - (oldChrSize - newChrSize);
+		else if (newChrSize > oldChrSize)
+			m_size = m_size + (newChrSize - oldChrSize);
+
+		// Create new buffer with new data
+		char* newData = (char*)malloc(m_size + 1);
+		memcpy(newData, m_data, realIndex);
+		memcpy(newData + realIndex + newChrSize, m_data + realIndex + oldChrSize, oldSize - realIndex - oldChrSize);
+		UTF8::FromUnicode(character, &newData[realIndex]);
+		newData[m_size] = '\0';
+
+		// Switch old buffer with new buffer
+		free(m_data);
+		m_data = newData;
+	}
 }
 
 Magma::String::~String() noexcept

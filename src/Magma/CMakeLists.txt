@@ -3,4 +3,4 @@ file(GLOB_RECURSE MAGMA_STREAMS_SRC
     "*.cpp"
 )
 
-add_library(Magma-Streams ${MAGMA_STREAMS_SRC})
+add_library(Magma-Lib ${MAGMA_STREAMS_SRC})

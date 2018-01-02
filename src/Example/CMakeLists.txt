@@ -5,4 +5,4 @@ file(GLOB_RECURSE EXAMPLE_SRC
 
 include_directories(../)
 add_executable(Example ${EXAMPLE_SRC})
-target_link_libraries(Example Magma-Streams)
+target_link_libraries(Example Magma-Lib)

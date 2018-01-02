@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
-project(Magma-Streams)
+project(Magma-Lib)
 
 enable_language(C CXX)
 set(CMAKE_CXX_STANDARD 14)
